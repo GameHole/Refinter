@@ -1,13 +1,13 @@
 {
     "name": "Refinter.Editor",
     "references": [
-        "GUID:9eabb7fb16a32a142a87cd461b3444f3"
+        "Refinter"
     ],
     "optionalUnityReferences": [],
-    "includePlatforms": [],
-    "excludePlatforms": [
+    "includePlatforms": [
         "Editor"
     ],
+    "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.IO;
+
 namespace Common.Reflection
 {
     
@@ -10,7 +12,10 @@ namespace Common.Reflection
         [InitializeOnLoadMethod]
         static void Init()
         {
-
+            string path = "Assets/csc.rsp";
+            if (!File.Exists(path))
+                File.WriteAllText(path, "-nowarn:0649");
+            AssetDatabase.Refresh();
             SetOrder("e598f802cca8a3f4eb19c7e7b7720d3e", -200);
         }
         static void SetOrder(string guid, int order)

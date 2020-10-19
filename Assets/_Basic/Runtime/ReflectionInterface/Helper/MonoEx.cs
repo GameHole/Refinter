@@ -38,4 +38,20 @@ public static class MonoEx
         yield return new WaitForSeconds(v);
         action?.Invoke();
     }
+    public static string formatTimeStr(this int v)
+    {
+        return v < 10 ? "0" + v : v.ToString();
+    }
+    public static void Remove<T>(this GameObject game)where T : MonoBehaviour
+    {
+        var runner = game.GetComponent<T>();
+        if (runner)
+            Object.Destroy(runner);
+    }
+    public static void Remove<T>(this MonoBehaviour game) where T : MonoBehaviour
+    {
+        var runner = game.GetComponent<T>();
+        if (runner)
+            Object.Destroy(runner);
+    }
 }

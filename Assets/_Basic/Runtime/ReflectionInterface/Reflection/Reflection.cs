@@ -30,6 +30,7 @@ namespace Refinter
                     if (typeof(IInterface).IsAssignableFrom(item) && item.IsInterface)
                     {
                         var instence = ReflectEx.Instance(item) as IInterface;
+                        //Debug.Log($"{item},{instence}");
                         if (instence != null)
                             interfaces.Add(item, instence);
                     }

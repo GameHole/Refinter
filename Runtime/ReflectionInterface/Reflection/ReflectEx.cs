@@ -30,22 +30,28 @@ namespace Refinter
             }
 
         }
-        public static T Instance<T>()
+        public static T Instance<T>()where T:class,IInterface
         {
-            var find = FindImpl(typeof(T));
-            if (find != null)
-                return (T)Activator.CreateInstance(find);
-            return default;
+            return Instance(typeof(T)) as T;
         }
         public static object Instance(Type type)
         {
             var find = FindImpl(type);
-            if (find != null)
+            for (int i = 0; i < find.Count; i++)
             {
-                if (find.IsSubclassOf(typeof(MonoBehaviour)))
-                    return FindIMonoImpl(find);
-                return Activator.CreateInstance(find);
+                var f = find[i];
+                if (find[i].IsSubclassOf(typeof(MonoBehaviour)))
+                {
+                    var m = FindIMonoImpl(f);
+                    if (m != null)
+                        return m;
+                }
+                else
+                {
+                    return Activator.CreateInstance(f);
+                }
             }
+            
             return null;
         }
         public static object FindIMonoImpl(Type type)
@@ -58,18 +64,19 @@ namespace Refinter
             }
             return null;
         }
-        public static Type FindImpl(Type inter)
+        public static List<Type> FindImpl(Type inter)
         {
+            List<Type> finds = new List<Type>();
             foreach (var assembly in workAssemblies)
             {
                 foreach (var item in assembly.GetTypes())
                 {
                     if (isIgnore(item)) continue;
                     if (inter.IsAssignableFrom(item))
-                        return item;
+                        finds.Add(item);
                 }
             }
-            return null;
+            return finds;
         }
         static void LoadCSharp()
         {

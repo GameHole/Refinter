@@ -22,6 +22,7 @@ namespace Refinter
         }
         void InjectSence()
         {
+            ClearNullObj();
             foreach (var assembly in ReflectEx.workAssemblies)
             {
                 foreach (var item in assembly.GetTypes())
@@ -60,6 +61,28 @@ namespace Refinter
             foreach (var item in interfaces.Values)
             {
                 ReflectEx.Inject(mono, item);
+            }
+        }
+        void ClearNullObj()
+        {
+            List<Type> removed = new List<Type>();
+            foreach (var item in interfaces.Keys)
+            {   
+                var v = interfaces[item];
+                //由于mono destroy后并不会立即置为null，故需要使用is判断是不是mono脚本
+                if (v is MonoBehaviour)
+                {
+                    //Debug.Log($"contain::key::{item},v::{v},isnull::{v == null}");
+                    //而 mono destroy 后使用as转换得到的结果却是null，因此转换后判断即可知道脚本是否被destroy
+                    if ((v as MonoBehaviour)==null)
+                    {
+                        removed.Add(item);
+                    }
+                }
+            }
+            foreach (var item in removed)
+            {
+                interfaces.Remove(item);
             }
         }
     }

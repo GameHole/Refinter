@@ -4,6 +4,8 @@ using UnityEngine;
 using Refinter;
 public static class MonoEx
 {
+    class CoroutineClass:MonoBehaviour { }
+    static CoroutineClass coroutine;
     public static T Instantiate<T>(this T prefab) where T : MonoBehaviour
     {
         var clone = Object.Instantiate(prefab);
@@ -31,7 +33,14 @@ public static class MonoEx
     }
     public static Coroutine Wait(this MonoBehaviour mono, float time, System.Action action)
     {
-        return mono.StartCoroutine(itrWait(time, action));
+        if (coroutine == null)
+        {
+            var go = new GameObject();
+            go.hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
+            coroutine = go.AddComponent<CoroutineClass>();
+            Object.DontDestroyOnLoad(go);
+        }
+        return coroutine.StartCoroutine(itrWait(time, action));
     }
     static IEnumerator itrWait(float v, System.Action action)
     {

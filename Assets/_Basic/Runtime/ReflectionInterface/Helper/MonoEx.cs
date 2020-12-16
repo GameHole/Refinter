@@ -38,7 +38,7 @@ public static class MonoEx
             var go = new GameObject();
             go.hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
             coroutine = go.AddComponent<CoroutineClass>();
-            Object.DontDestroyOnLoad(go);
+            //Object.DontDestroyOnLoad(go);
         }
         return coroutine.StartCoroutine(itrWait(time, action));
     }

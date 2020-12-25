@@ -20,6 +20,18 @@ namespace Refinter
                 InjectSence();
             };
         }
+        public static void Set<T>(IInterface inst)where T : IInterface
+        {
+            if (!typeof(T).IsInterface)
+                throw new ArgumentException($"type = {typeof(T)} is not a interface");
+            if (inst == null)
+                throw new NullReferenceException($"inst is null");
+            if(!interfaces.ContainsKey(typeof(T)))
+            {
+                throw new ArgumentException($"type = {typeof(T)} is not found in interface list");
+            }
+            interfaces[typeof(T)] = inst;
+        }
         void InjectSence()
         {
             ClearNullObj();

@@ -5,6 +5,15 @@ using System;
 using System.Reflection;
 namespace Refinter
 {
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple =false,Inherited =false)]
+    public class ImportantAttribute : Attribute
+    {
+        internal int index;
+        public ImportantAttribute(int index)
+        {
+            this.index = index;
+        }
+    }
     public static class ReflectEx
     {
         static Assembly[] _workAssemblies;
@@ -34,9 +43,20 @@ namespace Refinter
         {
             return Instance(typeof(T)) as T;
         }
+        static int GetIndex(Type type)
+        {
+            var att = type.GetCustomAttribute<ImportantAttribute>();
+            if (att != null)
+                return att.index;
+            return 0;
+        }
         public static object Instance(Type type)
         {
             var find = FindImpl(type);
+            find.Sort((a,b) =>
+            {
+                return GetIndex(b) - GetIndex(a);
+            });
             for (int i = 0; i < find.Count; i++)
             {
                 var f = find[i];

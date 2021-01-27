@@ -5,3 +5,7 @@ using UnityEngine;
 public interface IInterface
 {
 }
+public interface IInitializable
+{
+    void Initialize();
+}

@@ -32,7 +32,7 @@ namespace Refinter
             var itrType = inter.GetType();
             foreach (var item in obj.GetType().GetFields(BindingFlags.Instance| BindingFlags.Public| BindingFlags.NonPublic))
             {
-                if (item.FieldType.IsAssignableFrom(itrType))
+                if (item.FieldType.IsInterface && typeof(IInterface).IsAssignableFrom(item.FieldType) && item.FieldType.IsAssignableFrom(itrType))
                 {
                     item.SetValue(obj, inter);
                 }

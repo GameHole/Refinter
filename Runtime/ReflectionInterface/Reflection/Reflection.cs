@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,8 +10,11 @@ namespace Refinter
     public class Reflection : MonoBehaviour
     {
         internal static readonly Dictionary<Type, IInterface> interfaces = new Dictionary<Type, IInterface>();
-        static Dictionary<Type, bool> injected = new Dictionary<Type, bool>();
-        static Dictionary<MonoBehaviour, bool> monoInjected = new Dictionary<MonoBehaviour, bool>();
+        public static Dictionary<Type, IInterface> Interfaces => interfaces;
+        static Queue<IInitializable> initializables = new Queue<IInitializable>();
+        static HashSet<Type> injected = new HashSet<Type>();
+        static HashSet<MonoBehaviour> monoInjected = new HashSet<MonoBehaviour>();
+        public bool debug;
         void Awake()
         {
             DontDestroyOnLoad(gameObject);
@@ -31,9 +35,16 @@ namespace Refinter
                 throw new ArgumentException($"type = {typeof(T)} is not found in interface list");
             }
             interfaces[typeof(T)] = inst;
+            ReInjectInterface(typeof(T), inst);
         }
         void InjectSence()
         {
+            Stopwatch stopwatch = null;
+            if (debug)
+            {
+                stopwatch = new Stopwatch();
+                stopwatch.Start();
+            }
             ClearNullObj();
             foreach (var assembly in ReflectEx.workAssemblies)
             {
@@ -43,17 +54,26 @@ namespace Refinter
                     if (typeof(IInterface).IsAssignableFrom(item) && item.IsInterface)
                     {
                         var instence = ReflectEx.Instance(item) as IInterface;
-                        //Debug.Log($"{item},{instence}");
+                        //UnityEngine.Debug.Log($"{item},{instence}");
                         if (instence != null)
+                        {
                             interfaces.Add(item, instence);
+                            var init = (instence as IInitializable);
+                            if (init != null)
+                            {
+                                //UnityEngine.Debug.Log($"find init {init}");
+                                initializables.Enqueue(init);
+                            }
+                        }
                     }
                 }
             }
+          
             
             foreach (var obj in interfaces)
             {
-                if (injected.ContainsKey(obj.Key)) continue;
-                injected.Add(obj.Key, true);
+                if (injected.Contains(obj.Key)) continue;
+                injected.Add(obj.Key);
                 foreach (var inter in interfaces.Values)
                 {
                     ReflectEx.Inject(obj.Value, inter);
@@ -62,10 +82,31 @@ namespace Refinter
             foreach (var obj in Resources.FindObjectsOfTypeAll<MonoBehaviour>())
             {
                 if (!obj.gameObject.scene.IsValid() || obj.GetType().FullName.Contains("UnityEngine")) continue;
-                if (monoInjected.ContainsKey(obj)) continue;
-                monoInjected.Add(obj, true);
+                if (monoInjected.Contains(obj)) continue;
+                monoInjected.Add(obj);
                 Inject(obj);
                 //Debug.Log(obj);
+            }
+            while (initializables.Count > 0)
+            {
+                initializables.Dequeue().Initialize();
+            }
+
+            if (debug)
+            {
+                stopwatch.Stop();
+                UnityEngine.Debug.Log(stopwatch.Elapsed);
+            }
+        }
+        static void ReInjectInterface(Type type,IInterface inter)
+        {
+            foreach (var item in injected)
+            {
+                ReflectEx.Inject(interfaces[item], inter);
+            }
+            foreach (var item in monoInjected)
+            {
+                ReflectEx.Inject(item, inter);
             }
         }
         public static void Inject(MonoBehaviour mono)
@@ -96,6 +137,15 @@ namespace Refinter
             {
                 interfaces.Remove(item);
             }
+            HashSet<MonoBehaviour> injected = new HashSet<MonoBehaviour>();
+            foreach (var item in monoInjected)
+            {
+                if (item)
+                {
+                    injected.Add(item);
+                }
+            }
+            monoInjected = injected;
         }
     }
 

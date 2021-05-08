@@ -43,7 +43,7 @@ namespace Refinter
         {
             return Instance(typeof(T)) as T;
         }
-        static int GetIndex(Type type)
+        public static int GetIndex(Type type)
         {
             var att = type.GetCustomAttribute<ImportantAttribute>();
             if (att != null)
@@ -57,6 +57,10 @@ namespace Refinter
             {
                 return GetIndex(b) - GetIndex(a);
             });
+            //foreach (var item in find)
+            //{
+            //    Debug.Log($"find::{item}");
+            //}
             for (int i = 0; i < find.Count; i++)
             {
                 var f = find[i];

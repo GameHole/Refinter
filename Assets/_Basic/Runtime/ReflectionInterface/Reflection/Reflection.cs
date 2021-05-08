@@ -15,14 +15,23 @@ namespace Refinter
         static HashSet<Type> injected = new HashSet<Type>();
         static HashSet<MonoBehaviour> monoInjected = new HashSet<MonoBehaviour>();
         public bool debug;
+        public bool isInjectScene = true;
         void Awake()
         {
             DontDestroyOnLoad(gameObject);
             InjectSence();
-            SceneManager.sceneLoaded += (a,b)=>
+            if (isInjectScene)
             {
-                InjectSence();
-            };
+                SceneManager.sceneLoaded += (a, b) =>
+                {
+                    InjectSence();
+                };
+            }
+        }
+        public static T Get<T>()where T: IInterface
+        {
+            interfaces.TryGetValue(typeof(T), out var v);
+            return (T)v;
         }
         public static void Set<T>(IInterface inst)where T : IInterface
         {
@@ -79,13 +88,16 @@ namespace Refinter
                     ReflectEx.Inject(obj.Value, inter);
                 }
             }
-            foreach (var obj in Resources.FindObjectsOfTypeAll<MonoBehaviour>())
+            if (isInjectScene)
             {
-                if (!obj.gameObject.scene.IsValid() || obj.GetType().FullName.Contains("UnityEngine")) continue;
-                if (monoInjected.Contains(obj)) continue;
-                monoInjected.Add(obj);
-                Inject(obj);
-                //Debug.Log(obj);
+                foreach (var obj in Resources.FindObjectsOfTypeAll<MonoBehaviour>())
+                {
+                    if (!obj.gameObject.scene.IsValid() || obj.GetType().FullName.Contains("UnityEngine")) continue;
+                    if (monoInjected.Contains(obj)) continue;
+                    monoInjected.Add(obj);
+                    Inject(obj);
+                    //Debug.Log(obj);
+                }
             }
             while (initializables.Count > 0)
             {
